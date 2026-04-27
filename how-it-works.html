@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How it works — Spritico</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Geist',sans-serif;background:#0a0a0a;color:#e8e6e1;overflow-x:hidden;line-height:1.6;min-height:100vh}
+.shell{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:240px;background:#111110;border-right:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;z-index:50}
+.sidebar-logo{padding:1.5rem 1.25rem 1.25rem;border-bottom:1px solid rgba(255,255,255,0.06)}
+.logo-mark{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#4f6ef7,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;font-family:'Instrument Serif',serif}
+.logo-text{font-family:'Instrument Serif',serif;font-size:1.15rem;color:#f0ede8;letter-spacing:-0.3px}
+.logo-text span{color:#7c8ff5}
+.sidebar-nav{padding:0.75rem;flex:1;overflow-y:auto}
+.nav-label{font-size:0.65rem;font-weight:500;color:rgba(232,230,225,0.3);letter-spacing:0.1em;text-transform:uppercase;padding:0.75rem 0.5rem 0.4rem;display:block}
+.nav-item{display:flex;align-items:center;gap:10px;padding:0.55rem 0.75rem;border-radius:8px;font-size:0.82rem;color:rgba(232,230,225,0.55);text-decoration:none;transition:background 0.15s,color 0.15s;margin-bottom:1px}
+.nav-item:hover{background:rgba(255,255,255,0.05);color:#e8e6e1}
+.nav-item.active{background:rgba(124,143,245,0.1);color:#a5b0f8;border-left:2px solid rgba(124,143,245,0.5);padding-left:calc(0.75rem - 2px)}
+.sidebar-bottom{padding:1rem 0.75rem;border-top:1px solid rgba(255,255,255,0.06)}
+.convert-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:0.65rem;border-radius:8px;background:rgba(124,143,245,0.15);border:1px solid rgba(124,143,245,0.2);color:#a5b0f8;font-size:0.82rem;font-weight:500;text-decoration:none;transition:background 0.15s}
+.convert-btn:hover{background:rgba(124,143,245,0.22)}
+
+/* MAIN */
+.main{margin-left:240px;display:flex;flex-direction:column;min-height:100vh}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;padding:0.85rem 2.5rem;background:rgba(10,10,10,0.88);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.04)}
+.topbar-title{font-size:0.875rem;color:rgba(232,230,225,0.4)}
+.topbar-actions{display:flex;gap:8px}
+.tbtn{padding:0.45rem 1rem;border-radius:6px;font-size:0.78rem;font-weight:500;cursor:pointer;font-family:'Geist',sans-serif;text-decoration:none;transition:all 0.15s}
+.tbtn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.1);color:rgba(232,230,225,0.55)}
+.tbtn.ghost:hover{border-color:rgba(255,255,255,0.22);color:#e8e6e1}
+.tbtn.primary{background:#4f6ef7;border:1px solid #4f6ef7;color:#fff}
+.tbtn.primary:hover{background:#3d5ce6}
+
+/* PAGE */
+.page{flex:1;padding:4rem 2.5rem;max-width:860px;margin:0 auto;width:100%}
+.page-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(124,143,245,0.08);border:1px solid rgba(124,143,245,0.18);color:#9aa5f0;font-size:0.72rem;padding:0.35rem 0.9rem;border-radius:100px;margin-bottom:1.75rem}
+.page-title{font-family:'Instrument Serif',serif;font-size:clamp(2rem,4vw,3.2rem);font-weight:400;line-height:1.15;letter-spacing:-1px;color:#f0ede8;margin-bottom:1rem}
+.page-title em{font-style:italic;color:#7c8ff5}
+.page-sub{font-size:0.95rem;color:rgba(232,230,225,0.45);max-width:520px;font-weight:300;margin-bottom:3.5rem}
+
+/* STEPS */
+.steps{display:flex;flex-direction:column;gap:0}
+.step{display:grid;grid-template-columns:56px 1fr;gap:0 1.5rem;position:relative}
+.step:not(:last-child)::before{content:'';position:absolute;left:27px;top:52px;bottom:-24px;width:1.5px;background:linear-gradient(180deg,rgba(124,143,245,0.3),rgba(124,143,245,0.05))}
+.step-num{width:56px;height:56px;border-radius:14px;background:rgba(79,110,247,0.08);border:1px solid rgba(79,110,247,0.18);display:flex;align-items:center;justify-content:center;font-family:'Instrument Serif',serif;font-size:1.3rem;color:#7c8ff5;flex-shrink:0;margin-bottom:2.5rem;position:relative;z-index:1}
+.step-body{padding-bottom:2.5rem}
+.step-label{font-size:0.65rem;font-weight:500;color:rgba(124,143,245,0.6);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.4rem}
+.step-title{font-size:1.05rem;font-weight:500;color:#e8e6e1;margin-bottom:0.5rem}
+.step-desc{font-size:0.85rem;color:rgba(232,230,225,0.45);line-height:1.75;max-width:520px}
+.step-tag{display:inline-flex;align-items:center;gap:5px;margin-top:0.75rem;font-size:0.7rem;padding:3px 10px;border-radius:100px;background:rgba(74,222,128,0.07);border:1px solid rgba(74,222,128,0.15);color:rgba(74,222,128,0.7)}
+
+/* FAQ */
+.faq{margin-top:4rem;border-top:1px solid rgba(255,255,255,0.05);padding-top:3rem}
+.faq-title{font-family:'Instrument Serif',serif;font-size:1.5rem;color:#f0ede8;margin-bottom:2rem}
+.faq-item{border-bottom:1px solid rgba(255,255,255,0.05);padding:1.1rem 0}
+.faq-q{font-size:0.88rem;font-weight:500;color:rgba(232,230,225,0.75);margin-bottom:0.45rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:1rem;user-select:none}
+.faq-q:hover{color:#e8e6e1}
+.faq-a{font-size:0.82rem;color:rgba(232,230,225,0.4);line-height:1.75;display:none;padding-top:0.1rem}
+.faq-item.open .faq-a{display:block}
+.faq-item.open .faq-chevron{transform:rotate(180deg)}
+.faq-chevron{width:14px;height:14px;flex-shrink:0;transition:transform 0.2s;opacity:0.4}
+
+/* CTA */
+.cta-box{margin-top:3.5rem;background:rgba(79,110,247,0.06);border:1px solid rgba(79,110,247,0.14);border-radius:16px;padding:2.5rem;text-align:center}
+.cta-box h3{font-family:'Instrument Serif',serif;font-size:1.6rem;color:#f0ede8;margin-bottom:0.5rem}
+.cta-box p{font-size:0.85rem;color:rgba(232,230,225,0.4);margin-bottom:1.5rem}
+.cta-btn{display:inline-flex;align-items:center;gap:8px;background:#4f6ef7;color:#fff;border:none;padding:0.7rem 1.8rem;border-radius:8px;font-size:0.85rem;font-weight:500;cursor:pointer;font-family:'Geist',sans-serif;text-decoration:none;transition:background 0.15s}
+.cta-btn:hover{background:#3d5ce6}
+
+/* FOOTER */
+.footer{padding:1rem 2.5rem;border-top:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:space-between;background:#0a0a0a}
+.footer-l{font-size:0.7rem;color:rgba(232,230,225,0.2)}
+.footer-r{display:flex;gap:1.25rem}
+.footer-r a{font-size:0.7rem;color:rgba(232,230,225,0.2);text-decoration:none;transition:color 0.15s}
+.footer-r a:hover{color:rgba(232,230,225,0.45)}
+
+@media(max-width:768px){
+  .shell{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .main{margin-left:0}
+  .page{padding:2rem 1.25rem}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <a href="index.html" class="logo-mark">
+      <div class="logo-icon">S</div>
+      <span class="logo-text">Spritico<span>.</span></span>
+    </a>
+  </div>
+  <nav class="sidebar-nav">
+    <span class="nav-label">Menu</span>
+    <a href="index.html" class="nav-item"><span style="font-size:13px">⌂</span> Home</a>
+    <a href="how-it-works.html" class="nav-item active"><span style="font-size:13px">◎</span> How it works</a>
+    <a href="index.html#features" class="nav-item"><span style="font-size:13px">◈</span> Features</a>
+    <span class="nav-label" style="margin-top:0.5rem">Recent notes</span>
+    <div class="nav-item" style="opacity:0.28;pointer-events:none;font-style:italic;font-size:0.72rem">No notes yet</div>
+  </nav>
+  <div class="sidebar-bottom">
+    <a href="index.html#upload" class="convert-btn"><span>+</span> Convert a note</a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <span class="topbar-title">spritico.com / how it works</span>
+    <div class="topbar-actions">
+      <a href="how-it-works.html" class="tbtn ghost">How it works</a>
+      <a href="index.html#upload" class="tbtn primary">Try free</a>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-badge"><span style="width:5px;height:5px;border-radius:50%;background:#7c8ff5;display:inline-block"></span> Simple, private, instant</div>
+    <h1 class="page-title">How Spritico <em>works</em></h1>
+    <p class="page-sub">Three steps from messy handwriting to clean, exportable digital notes — all inside your browser, nothing uploaded to any server.</p>
+
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <p class="step-label">Step one</p>
+          <p class="step-title">Upload your note</p>
+          <p class="step-desc">Drag and drop or click to upload any photo, scan, or PDF of your handwritten or typed notes. Spritico accepts JPG, PNG, WEBP and PDF files. Even low-quality photos taken under bad lighting work fine — the image enhancer sharpens and binarises the image before reading it.</p>
+          <span class="step-tag">✓ JPG &nbsp;·&nbsp; PNG &nbsp;·&nbsp; WEBP &nbsp;·&nbsp; PDF</span>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <p class="step-label">Step two</p>
+          <p class="step-title">Spritico reads and structures it</p>
+          <p class="step-desc">The image is enhanced right in your browser — scaled up, contrast-stretched, sharpened, and binarised with an adaptive threshold. The OCR engine then reads every character and the formatter intelligently detects headings, bullet points, numbered lists, formulas, and labels — turning raw text into clean structured notes.</p>
+          <span class="step-tag">✓ Runs 100% in your browser — nothing sent to any server</span>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <p class="step-label">Step three</p>
+          <p class="step-title">Export in any format</p>
+          <p class="step-desc">Once your notes are digitised, copy them to clipboard or download as a polished PDF, a Word document (.doc), or a plain text file (.txt). All exports are formatted cleanly — the PDF includes proper heading styles, the Word doc is ready to edit, and the .txt is clean UTF-8.</p>
+          <span class="step-tag">✓ PDF &nbsp;·&nbsp; Word &nbsp;·&nbsp; .txt &nbsp;·&nbsp; Copy</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- FAQ -->
+    <div class="faq">
+      <h2 class="faq-title">Frequently asked questions</h2>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          Is my data private? Does anything get uploaded?
+          <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6l5 5 5-5"/></svg>
+        </div>
+        <p class="faq-a">Completely private. Spritico runs entirely in your browser using JavaScript. Your images and notes never leave your device — there is no backend server, no database, and nothing is stored anywhere.</p>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          What languages does Spritico support?
+          <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6l5 5 5-5"/></svg>
+        </div>
+        <p class="faq-a">Currently English is fully supported. The OCR engine reads Latin-script characters reliably. Support for Hindi, Arabic, and other scripts is planned for a future update.</p>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          My handwriting is very messy — will it still work?
+          <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6l5 5 5-5"/></svg>
+        </div>
+        <p class="faq-a">Spritico pre-processes every image to maximise OCR accuracy — it scales up, sharpens, and binarises your image before reading it. Very neat handwriting gets near-perfect results. Very messy or cursive handwriting may have some errors, but the output will always be structured and clean. Taking the photo in good lighting helps significantly.</p>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          Can I convert multi-page PDFs?
+          <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6l5 5 5-5"/></svg>
+        </div>
+        <p class="faq-a">Yes. Spritico processes each page of your PDF in order and combines them into one clean output with page separators. Large PDFs may take a little longer since everything runs in your browser.</p>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          Is Spritico free?
+          <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6l5 5 5-5"/></svg>
+        </div>
+        <p class="faq-a">Yes — completely free, no account required, no usage limits. Convert as many notes as you like.</p>
+      </div>
+
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-box">
+      <h3>Ready to try it?</h3>
+      <p>Upload your first note in seconds — no sign-up, no install, no limits.</p>
+      <a href="index.html#upload" class="cta-btn">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M7 1v8M4 4l3-3 3 3M2 11h10"/></svg>
+        Convert a note
+      </a>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <span class="footer-l">© 2025 Spritico. All rights reserved.</span>
+    <div class="footer-r">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Contact</a>
+    </div>
+  </footer>
+</div>
+</div>
+
+<script>
+function toggleFaq(el) {
+  const item = el.closest('.faq-item');
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+</script>
+</body>
+</html>

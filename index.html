@@ -134,15 +134,15 @@ body{font-family:'Geist',sans-serif;background:#0a0a0a;color:#e8e6e1;overflow-x:
 <div class="shell">
 <aside class="sidebar">
   <div class="sidebar-logo">
-    <a href="spritico.html" class="logo-mark">
+    <a href="index.html" class="logo-mark">
       <div class="logo-icon">S</div>
       <span class="logo-text">Spritico<span>.</span></span>
     </a>
   </div>
   <nav class="sidebar-nav">
     <span class="nav-label">Menu</span>
-    <a href="spritico.html" class="nav-item active"><span style="font-size:13px">⌂</span> Home</a>
-    <a href="spritico-how.html" class="nav-item"><span style="font-size:13px">◎</span> How it works</a>
+    <a href="index.html" class="nav-item active"><span style="font-size:13px">⌂</span> Home</a>
+    <a href="how-it-works.html" class="nav-item"><span style="font-size:13px">◎</span> How it works</a>
     <a href="#features" class="nav-item"><span style="font-size:13px">◈</span> Features</a>
     <span class="nav-label" style="margin-top:0.5rem">Recent notes</span>
     <div class="nav-item" style="opacity:0.28;pointer-events:none;font-style:italic;font-size:0.72rem">No notes yet</div>
@@ -156,7 +156,7 @@ body{font-family:'Geist',sans-serif;background:#0a0a0a;color:#e8e6e1;overflow-x:
   <div class="topbar">
     <span class="topbar-title">spritico.com</span>
     <div class="topbar-actions">
-      <a href="spritico-how.html" class="tbtn ghost">How it works</a>
+      <a href="how-it-works.html" class="tbtn ghost">How it works</a>
       <a href="#upload" class="tbtn primary">Try free</a>
     </div>
   </div>
@@ -241,7 +241,7 @@ body{font-family:'Geist',sans-serif;background:#0a0a0a;color:#e8e6e1;overflow-x:
   <footer class="footer">
     <span class="footer-l">© 2026 Spritico. All rights reserved.</span>
     <div class="footer-r">
-      <a href="spritico-how.html">How it works</a>
+      <a href="how-it-works.html">How it works</a>
       <a href="#">Privacy</a>
       <a href="#">Terms</a>
       <a href="#">Contact</a>
@@ -252,9 +252,23 @@ body{font-family:'Geist',sans-serif;background:#0a0a0a;color:#e8e6e1;overflow-x:
 
 <!-- SCRIPTS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ocrad.js/ocrad.js"></script>
 <script>
 'use strict';
+
+// Fix hash-nav black screen: skip entry animations when page loads at a hash
+(function(){
+  if (!window.location.hash) return;
+  const s = document.createElement('style');
+  s.id = 'skip-anim-fix';
+  s.textContent = '.hero>*,.reveal{animation:none!important;opacity:1!important;transform:none!important}';
+  document.head.appendChild(s);
+  window.addEventListener('load', () => {
+    setTimeout(() => { const el = document.getElementById('skip-anim-fix'); if(el) el.remove(); }, 200);
+    const t = document.querySelector(window.location.hash);
+    if (t) t.scrollIntoView({behavior:'instant'});
+  });
+})();
 
 // ── Scroll reveals ──
 document.querySelectorAll('.reveal').forEach(el => {
@@ -273,11 +287,8 @@ let lastName  = 'spritico-note';
 // ── Wire up upload button and dropzone ──
 const dz  = document.getElementById('dropzone');
 const fin = document.getElementById('fileInput');
-// Delegate all clicks on the dropzone to the file input
-dz.addEventListener('click', e => {
-  if (!e.target.closest('button[id="upload-trigger-btn"]')) fin.click();
-  else fin.click();
-});
+// Delegate clicks — survives resetZone() replacing innerHTML
+dz.addEventListener('click', e => { fin.click(); });
 dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('drag-over'); });
 dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
 dz.addEventListener('drop', e => {
@@ -412,26 +423,21 @@ function loadScript(src) {
 }
 
 // ══════════════════════════════════════════
-//  TESSERACT OCR
+//  OCR — ocrad.js (no Web Worker, runs in main thread)
 // ══════════════════════════════════════════
 async function runOCR(blob, onProg) {
-  // Use workerPath pointing to the CDN worker script so no blob: URL is created
-  const worker = await Tesseract.createWorker('eng', 1, {
-    workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',
-    workerBlobURL: false,
-    logger: m => {
-      if (m.status === 'recognizing text' && onProg) onProg(Math.round(m.progress * 100));
-    }
-  });
-  await worker.setParameters({
-    tessedit_pageseg_mode:     '3',
-    preserve_interword_spaces: '1',
-    load_system_dawg:          '0',
-    load_freq_dawg:            '0',
-  });
-  const res = await worker.recognize(blob);
-  await worker.terminate();
-  return res.data;
+  if (onProg) onProg(30);
+  // Draw blob onto canvas so ocrad can read it
+  const bmp = await createImageBitmap(blob);
+  const cv  = document.createElement('canvas');
+  cv.width  = bmp.width;
+  cv.height = bmp.height;
+  cv.getContext('2d').drawImage(bmp, 0, 0);
+  if (onProg) onProg(70);
+  const text = OCRAD(cv);
+  if (onProg) onProg(100);
+  // Return same shape as Tesseract so formatText still works
+  return { text, confidence: 75 };
 }
 
 // ══════════════════════════════════════════
@@ -625,7 +631,7 @@ function resetZone() {
         Upload note
       </button>
     </div>`;
-  // delegated click on dz handles trigger — no re-bind needed
+  // click handled by dz delegation below
 }
 
 // ══════════════════════════════════════════
